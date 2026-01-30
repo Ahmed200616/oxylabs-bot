@@ -7,34 +7,30 @@ const OXY_ACCOUNTS = [
   { user: 'zaina_lk87V', pass: 'i4CRdM_KPR~c' }
 ];
 
-const OFFER_URL = 'https://exclusivematch.netlify.app/';
+// MISSION CRITICAL URLS
+const OFFER_URL = 'https://top-deal.me/a/NkR2OHMOo5hRxK0'; // Target: CrackRevenue/Stripchat
+const SPOOF_REFERER = 'https://exclusivematch.netlify.app/'; // Bridge: Netlify Exclusive
 const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1466180407790670115/_B0VJ0h6v8rGGv0evpBQJUfchddXCJOWGyKQxffiUydN9gk-tBlQwskfVQhqspaTt-fg';
 
 const MAX_HITS_PER_ACC = 741; 
 let currentAccIndex = 0;
 let currentAccHits = 0;
 
-// 2. THE FINAL BOSS BEHAVIOR (Mouse Pathing & Action Shuffling)
+// 2. THE FINAL BOSS BEHAVIOR
 const STEALTH_JS = Buffer.from(`
   (async () => {
     const sleep = ms => new Promise(r => setTimeout(r, ms));
     const start = Date.now();
 
-    // 1. MOUSE PATHING JITTER (Coordinate Based)
     const moveMouseHumanly = async () => {
       for (let i = 0; i < 5; i++) {
         const x = Math.floor(Math.random() * window.innerWidth);
         const y = Math.floor(Math.random() * window.innerHeight);
-        const event = new MouseEvent('mousemove', {
-          view: window, bubbles: true, cancelable: true,
-          clientX: x, clientY: y
-        });
-        document.dispatchEvent(event);
+        document.dispatchEvent(new MouseEvent('mousemove', {view: window, bubbles: true, clientX: x, clientY: y}));
         await sleep(Math.floor(Math.random() * 1000) + 500);
       }
     };
 
-    // 2. SHUFFLED ACTION ENGINE
     const actions = [
       async () => { window.scrollBy({top: Math.random()*500+200, behavior:'smooth'}); },
       async () => { await moveMouseHumanly(); },
@@ -45,16 +41,10 @@ const STEALTH_JS = Buffer.from(`
       async () => { await sleep(Math.random()*5000+2000); }
     ];
 
-    // Shuffle and execute actions
     const sequence = actions.sort(() => Math.random() - 0.5);
-    for (const action of sequence) {
-      await action();
-      await sleep(Math.random()*3000+2000);
-    }
+    for (const action of sequence) { await action(); await sleep(Math.random()*3000+2000); }
 
-    // 3. TARGETED CLICK (DOM Matching)
     const links = Array.from(document.querySelectorAll('a, button'));
-    // Filter for common Stripchat/Dating CTA words
     const cta = links.find(l => l.innerText.match(/Enter|Watch|Join|Match|Chat/i)) || links[0];
     
     if (cta) {
@@ -88,7 +78,10 @@ async function sendOxylabsHit(threadId) {
   try {
     const res = await axios.post('https://realtime.oxylabs.io/v1/queries', payload, {
       auth: { username: auth.user, password: auth.pass },
-      timeout: 240000
+      timeout: 240000,
+      headers: {
+        'Referer': SPOOF_REFERER // Spoofing the Netlify Bridge
+      }
     });
 
     currentAccHits++;
@@ -112,7 +105,7 @@ async function sendDiscordReport(threadId, user, success, count, ua) {
       color: success ? 0x00ff00 : 0xff0000,
       fields: [
         { name: "Agent", value: `Thread ${threadId}`, inline: true },
-        { name: "Device", value: ua, inline: true },
+        { name: "Origin", value: "exclusivematch.netlify.app", inline: true },
         { name: "Ammo Left", value: `${count} / ${MAX_HITS_PER_ACC}`, inline: true }
       ],
       footer: { text: "Eduvos Fee Mission | Oxylabs Resi" },
@@ -130,5 +123,5 @@ async function worker(id) {
   }
 }
 
-// Start 3 threads for the 12 PM Blitz
+// 3 Threads for the Blitz
 for (let i = 1; i <= 3; i++) worker(i);
