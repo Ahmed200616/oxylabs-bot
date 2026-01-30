@@ -1,0 +1,33 @@
+name: Run Oxylabs Bot
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *' # runs every hour
+
+jobs:
+  bot:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run bot
+      env:
+        OXY_USER_1: ${{ secrets.OXY_USER_1 }}
+        OXY_PASS_1: ${{ secrets.OXY_PASS_1 }}
+        OXY_USER_2: ${{ secrets.OXY_USER_2 }}
+        OXY_PASS_2: ${{ secrets.OXY_PASS_2 }}
+        OXY_USER_3: ${{ secrets.OXY_USER_3 }}
+        OXY_PASS_3: ${{ secrets.OXY_PASS_3 }}
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      run: node bot.js
