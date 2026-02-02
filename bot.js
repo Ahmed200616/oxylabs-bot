@@ -2,7 +2,7 @@ const axios = require('axios');
 
 // 1. THE ARSENAL (15 Keys)
 const SCRAPER_KEYS = [
-  '0f7d434a15f1ae2a82425af683fa6d4f', '7c60083697b6c3a2a046bacf9c1f6093', 
+  '7c60083697b6c3a2a046bacf9c1f6093', 
   '6443802a2dd51f89dba20c54c76b9cf4', '003779484407b609d20f821c3ceff589', 
   '4ae18da16b92d0a68cac43175e745b96', 'f6f28237d77cd406ae4a3ee32e6ee063', 
   '019167547730d7f9088d1e9b69880647', '6fdae3429589051c49e59230c5903b1b', 
