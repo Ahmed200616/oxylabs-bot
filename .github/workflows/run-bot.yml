@@ -1,13 +1,12 @@
-name: Run Oxylabs Bot
+name: Run ScraperAPI Blitz
 
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: '0 * * * *' # runs every hour
+  workflow_dispatch: # Manual Trigger (Best for long heists)
 
 jobs:
-  bot:
+  heist:
     runs-on: ubuntu-latest
+    timeout-minutes: 360 # ⚠️ CRITICAL: Allows job to run for the full 6-hour max
 
     steps:
     - name: Checkout code
@@ -19,15 +18,8 @@ jobs:
         node-version: '18'
 
     - name: Install dependencies
-      run: npm install
+      run: npm install axios
 
-    - name: Run bot
-      env:
-        OXY_USER_1: ${{ secrets.OXY_USER_1 }}
-        OXY_PASS_1: ${{ secrets.OXY_PASS_1 }}
-        OXY_USER_2: ${{ secrets.OXY_USER_2 }}
-        OXY_PASS_2: ${{ secrets.OXY_PASS_2 }}
-        OXY_USER_3: ${{ secrets.OXY_USER_3 }}
-        OXY_PASS_3: ${{ secrets.OXY_PASS_3 }}
-        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+    - name: Run Mission
+      # No environment variables needed as keys are in bot.js
       run: node bot.js
