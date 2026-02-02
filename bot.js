@@ -1,138 +1,155 @@
 const axios = require('axios');
 
-// 1. OXYLABS ARMORY (Rotating Weapons)
-const OXY_ACCOUNTS = [
-  { user: 'test1_FPPbW', pass: 'pTlx3cwVLzh70s~X' },
-  { user: 'testing_69XVH', pass: 'a15QveMGT3yt~A' },
-  { user: 'zaina_lk87V', pass: 'i4CRdM_KPR~c' }
+// 1. THE ARSENAL (15 Keys)
+const SCRAPER_KEYS = [
+  '0f7d434a15f1ae2a82425af683fa6d4f', '7c60083697b6c3a2a046bacf9c1f6093', 
+  '6443802a2dd51f89dba20c54c76b9cf4', '003779484407b609d20f821c3ceff589', 
+  '4ae18da16b92d0a68cac43175e745b96', 'f6f28237d77cd406ae4a3ee32e6ee063', 
+  '019167547730d7f9088d1e9b69880647', '6fdae3429589051c49e59230c5903b1b', 
+  '22d21e554bc8c21f97561ae784375824', 'a5ee6461f898bbc8e203ea9222781c38', 
+  'e0689357652a846cca6f86f32bb23496', 'de246793e290b0f2ef67ada008e61b7a', 
+  'b091e902e9b4fe7b70ffa1d502ac8f8a', 'dd11627ba35c316eadc5e2c1cb95baba', 
+  'aeec0d8c7598cb07460cd5cc2865a69b'
 ];
 
-// MISSION CRITICAL URLS
-const OFFER_URL = 'https://top-deal.me/a/NkR2OHMOo5hRxK0'; 
-const SPOOF_REFERER = 'https://exclusivematch.netlify.app/'; 
-const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1466180407790670115/_B0VJ0h6v8rGGv0evpBQJUfchddXCJOWGyKQxffiUydN9gk-tBlQwskfVQhqspaTt-fg';
+const CONFIG = {
+  OFFER_URL: 'https://top-deal.me/a/NkR2OHMOo5hRxK0',
+  WEBHOOK: 'https://discord.com/api/webhooks/1466180407790670115/_B0VJ0h6v8rGGv0evpBQJUfchddXCJOWGyKQxffiUydN9gk-tBlQwskfVQhqspaTt-fg',
+  TARGET: 1500
+};
 
-const MAX_HITS_PER_ACC = 741; 
-let currentAccIndex = 0;
-let currentAccHits = 0;
+let currentKeyIndex = 0;
+let totalHits = 0;
 
-// 2. THE FINAL BOSS BEHAVIOR (Plain String - No Base64 to avoid Oxylabs 400 errors)
-const STEALTH_JS = `
+// ELITE STEALTH: Smart Context-Aware Fingerprinting
+const VANGUARD_JS = `
   (async () => {
     const sleep = ms => new Promise(r => setTimeout(r, ms));
     const start = Date.now();
-    
-    // Humanly movements: Random Scrolling
-    for (let i = 0; i < 4; i++) {
-      window.scrollBy({top: Math.random() * 500 + 200, behavior: 'smooth'});
-      await sleep(Math.floor(Math.random() * 2000) + 1000);
-    }
 
-    // Attempt Click
+    // 1. SMART HARDWARE SPOOFING (Context Aware)
+    // Detects if ScraperAPI gave us a Mobile UA or Desktop UA
+    const isMobile = /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    
+    Object.defineProperty(navigator, 'webdriver', {get: () => false});
+    
+    const getParameter = WebGLRenderingContext.prototype.getParameter;
+    WebGLRenderingContext.prototype.getParameter = function(parameter) {
+      // 37445 = UNMASKED_VENDOR_WEBGL
+      // 37446 = UNMASKED_RENDERER_WEBGL
+      if (parameter === 37445) return isMobile ? 'Qualcomm' : 'Intel Inc.'; 
+      if (parameter === 37446) return isMobile ? 'Adreno (TM) 640' : 'Intel(R) Iris(R) Xe Graphics'; 
+      return getParameter.apply(this, [parameter]);
+    };
+
+    // 2. ORGANIC READING PATTERN
+    const scrollPattern = async () => {
+      const steps = Math.floor(Math.random() * 6) + 6; 
+      for (let i = 0; i < steps; i++) {
+        // Pauses between 2s and 5s
+        const pause = Math.random() > 0.8 ? 5000 : 2000; 
+        window.scrollBy({ top: Math.random() * 300 + 100, behavior: 'smooth' });
+        await sleep(pause);
+        
+        // 15% Chance to scroll back up (Re-reading)
+        if (Math.random() > 0.85) window.scrollBy({ top: -200, behavior: 'smooth' });
+      }
+    };
+    await scrollPattern();
+
+    // 3. INTERACTION
     const links = Array.from(document.querySelectorAll('a, button'));
     const cta = links.find(l => l.innerText.match(/Enter|Watch|Join|Match|Chat/i)) || links[0];
-    
-    if (cta) { 
+    if (cta) {
+      // Mouseover/Touchstart simulation
+      const eventType = isMobile ? 'touchstart' : 'mouseover';
+      cta.dispatchEvent(new MouseEvent(eventType, { bubbles: true }));
+      await sleep(Math.random() * 2000 + 1000); 
       cta.click(); 
-      await sleep(15000); // Wait for the click to process
     }
-    
-    // Create a physical marker in the HTML for the scraper to detect success
-    const marker = document.createElement('div');
-    marker.id = 'BOSS_COMPLETE_SIGNAL';
-    marker.innerText = 'MISSION_ACCOMPLISHED';
-    document.body.appendChild(marker);
+
+    // 4. DWELL TIME (45s - 80s)
+    // Optimized for 6-hour completion
+    const dwell = Math.floor(Math.random() * 35000) + 45000; 
+    const elapsed = Date.now() - start;
+    if (dwell > elapsed) await sleep(dwell - elapsed);
   })();
 `;
 
-async function sendOxylabsHit(threadId) {
-  if (currentAccIndex >= OXY_ACCOUNTS.length) {
-    console.log("🏁 MISSION SUCCESS: ALL ELITE HITS EXHAUSTED.");
+async function fireAgent(id) {
+  if (totalHits >= CONFIG.TARGET) {
+    console.log("🏁 MISSION COMPLETE: 1,500 HITS.");
     process.exit();
   }
-
-  const auth = OXY_ACCOUNTS[currentAccIndex];
-  // Oxylabs Realtime API typically prefers 'desktop' or 'mobile' tags
-  const uaType = Math.random() > 0.4 ? 'desktop' : 'mobile';
-
-  const payload = {
-    source: 'universal',
-    url: OFFER_URL,
-    geo_location: 'United States',
-    render: 'html',
-    user_agent_type: uaType,
-    js_snippet: STEALTH_JS // Plain string is more stable for Oxylabs Universal
-  };
+  
+  const key = SCRAPER_KEYS[currentKeyIndex];
+  const startTime = Date.now();
 
   try {
-    const res = await axios.post('https://realtime.oxylabs.io/v1/queries', payload, {
-      auth: { username: auth.user, password: auth.pass },
-      timeout: 180000, // 3-minute timeout
-      headers: { 
-        'Content-Type': 'application/json',
-        'Referer': SPOOF_REFERER 
-      }
+    await axios.get('https://api.scraperapi.com/', {
+      params: {
+        api_key: key,
+        url: CONFIG.OFFER_URL,
+        render: 'true',
+        country_code: 'us',
+        premium: 'true', 
+        // Mix devices, but let JS handle the fingerprint match
+        device_type: Math.random() > 0.5 ? 'desktop' : 'mobile', 
+        js_instructions: VANGUARD_JS,
+        session_number: currentKeyIndex // Sticky sessions
+      },
+      timeout: 180000 
     });
 
-    currentAccHits++;
+    totalHits++;
+    const duration = Math.round((Date.now() - startTime) / 1000);
+    await reportToDiscord(id, duration, totalHits);
     
-    // Check if our marker exists in the returned content
-    const responseData = JSON.stringify(res.data);
-    const success = responseData.includes("BOSS_COMPLETE_SIGNAL");
-    
-    await sendDiscordReport(threadId, auth.user, success, currentAccHits, uaType);
-    
-    if (currentAccHits >= MAX_HITS_PER_ACC) {
-      currentAccIndex++;
-      currentAccHits = 0;
-    }
   } catch (e) {
-    const errorMsg = e.response?.data?.message || e.message;
-    console.log(`[T${threadId}] API Drop: ${errorMsg}`);
+    console.log(`[T${id}] Key ${currentKeyIndex} Drop: ${e.message}`);
+    // If blocked, rotate key immediately
+    if (e.response?.status === 403 || e.response?.status === 429) {
+      currentKeyIndex = (currentKeyIndex + 1) % SCRAPER_KEYS.length;
+    }
+    // Safe cool-down logic
+    await new Promise(r => setTimeout(r, 45000));
   }
 }
 
-async function sendDiscordReport(threadId, user, success, count, ua) {
+async function reportToDiscord(id, time, total) {
   const payload = {
     embeds: [{
-      title: success ? "🛡️ FINAL BOSS SHIELD ACTIVE" : "⚠️ SHIELD BREACHED",
-      color: success ? 0x00ff00 : 0xff0000,
+      title: "🛡️ TACTICAL VANGUARD: HIT",
+      color: 0x9b59b6, // Purple for Elite
       fields: [
-        { name: "Agent", value: `Thread ${threadId}`, inline: true },
-        { name: "Account", value: user, inline: true },
-        { name: "Device", value: ua, inline: true },
-        { name: "Ammo Left", value: `${MAX_HITS_PER_ACC - count} / ${MAX_HITS_PER_ACC}`, inline: true }
+        { name: "Agent", value: `Thread-${id}`, inline: true },
+        { name: "Dwell Time", value: `${time}s`, inline: true },
+        { name: "Progress", value: `${total} / ${CONFIG.TARGET}`, inline: true }
       ],
-      footer: { text: "Eduvos Fee Mission | Oxylabs Resi" },
+      footer: { text: "6-Hour Mission | Smart GPU Spoofing Active" },
       timestamp: new Date()
     }]
   };
-  await axios.post(DISCORD_WEBHOOK_URL, payload).catch(() => {});
+  await axios.post(CONFIG.WEBHOOK, payload).catch(() => {});
 }
 
 async function worker(id) {
-  while (currentAccIndex < OXY_ACCOUNTS.length) {
-    const hour = new Date().getUTCHours(); 
-    let waitMultiplier = 1;
+  // Stagger start: Agents launch 1 minute apart
+  await new Promise(r => setTimeout(r, (id - 1) * 60000));
 
-    // NIGHT MODE: 11 PM to 5 AM UTC
-    if (hour >= 23 || hour <= 5) {
-      waitMultiplier = 3; 
-    }
-
-    await sendOxylabsHit(id);
+  while (totalHits < CONFIG.TARGET) {
+    await fireAgent(id);
     
-    // Random delay between 90s and 240s
-    const baseWait = Math.floor(Math.random() * 150000) + 90000;
-    const finalWait = baseWait * waitMultiplier;
-    
-    console.log(`[T${id}] Waiting ${Math.round(finalWait/1000)}s for next hit...`);
-    await new Promise(r => setTimeout(r, finalWait));
+    // TACTICAL WAIT: 15s - 45s between hits
+    // With 6 agents, this averages ~1 hit every 15 seconds globally
+    const chillTime = Math.floor(Math.random() * 30000) + 15000; 
+    console.log(`[T${id}] Cooling down for ${Math.round(chillTime/1000)}s...`);
+    await new Promise(r => setTimeout(r, chillTime));
   }
 }
 
-// Start 3 threads for the Blitz
-for (let i = 1; i <= 3; i++) {
-  console.log(`🚀 Launching Agent ${i}...`);
+// 6 AGENTS: Calculated for 6-Hour Completion
+for (let i = 1; i <= 6; i++) {
+  console.log(`🚀 Launching Agent ${i} (Tactical Mode)...`);
   worker(i);
 }
