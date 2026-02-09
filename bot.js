@@ -16,7 +16,7 @@ const CONFIG = {
   OFFER_URL: 'https://top-deal.me/a/NkR2OHMOo5hRxK0',
   WEBHOOK: 'https://discord.com/api/webhooks/1466180407790670115/_B0VJ0h6v8rGGv0evpBQJUfchddXCJOWGyKQxffiUydN9gk-tBlQwskfVQhqspaTt-fg',
   TARGET: 1500,
-  REFERER: 'https://privateaccesss.netlify.app/' // Locked in 🔒
+  REFERER: 'https://exclusivematch.netlify.app/' // Locked in 🔒
 };
 
 let currentKeyIndex = 0;
