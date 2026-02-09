@@ -15,7 +15,8 @@ const SCRAPER_KEYS = [
 const CONFIG = {
   OFFER_URL: 'https://top-deal.me/a/NkR2OHMOo5hRxK0',
   WEBHOOK: 'https://discord.com/api/webhooks/1466180407790670115/_B0VJ0h6v8rGGv0evpBQJUfchddXCJOWGyKQxffiUydN9gk-tBlQwskfVQhqspaTt-fg',
-  TARGET: 1500
+  TARGET: 1500,
+  REFERER: 'https://privateaccesss.netlify.app/' // Locked in 🔒
 };
 
 let currentKeyIndex = 0;
@@ -78,6 +79,9 @@ async function fireAgent(id) {
         js_instructions: VANGUARD_JS,
         session_number: Math.floor(Math.random() * 1000000)
       },
+      headers: {
+        'Referer': CONFIG.REFERER // Set custom referer 🛡️
+      },
       timeout: 180000 
     });
 
@@ -90,10 +94,8 @@ async function fireAgent(id) {
     const deadKey = SCRAPER_KEYS[currentKeyIndex];
     console.log(`[T${id}] Key Index ${currentKeyIndex} Drop: Status ${status || e.message}`);
     
-    // 🚨 ALERT DISCORD IF KEY IS DEAD/EMPTY
     if (status === 401 || status === 403) {
       await alertDeadKey(status, deadKey, currentKeyIndex);
-      // ROTATE IMMEDIATELY
       currentKeyIndex = (currentKeyIndex + 1) % SCRAPER_KEYS.length;
     }
     
@@ -105,12 +107,13 @@ async function fireAgent(id) {
   }
 }
 
+// ... (Rest of your alertDeadKey, reportToDiscord, and worker functions remain the same)
 async function alertDeadKey(status, key, index) {
   const type = status === 401 ? "INVALID/BANNED" : "OUT OF CREDITS";
   const payload = {
     embeds: [{
       title: `⚠️ KEY EJECTED: ${type}`,
-      color: 0xff0000, // Red for Error
+      color: 0xff0000,
       fields: [
         { name: "Status", value: `${status}`, inline: true },
         { name: "Index", value: `${index}`, inline: true },
