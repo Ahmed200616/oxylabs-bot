@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-// 1. THE ARSENAL (14 Keys)
+// 1. THE ARSENAL (Keys are rotated automatically on 403/401)
 const SCRAPER_KEYS = [
   'b492c5b9d89a3fed6c78467cb503e9a0', '71af7e1aa3d0b5dae685dcaf2d0a1a2d',
   '917cf3ace1e1927e6c94ffcdadcbe1f7', '1d239d3c205bcb53598eef82c33e48f2', 
@@ -22,37 +22,37 @@ const CONFIG = {
 let currentKeyIndex = 0;
 let totalHits = 0;
 
+// BRAINS: Enhanced Human Simulation for MyLead Dashboard
 const VANGUARD_JS = `
   (async () => {
     const sleep = ms => new Promise(r => setTimeout(r, ms));
     const start = Date.now();
     const isMobile = /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    
     Object.defineProperty(navigator, 'webdriver', {get: () => false});
-    const getParameter = WebGLRenderingContext.prototype.getParameter;
-    WebGLRenderingContext.prototype.getParameter = function(parameter) {
-      if (parameter === 37445) return isMobile ? 'Qualcomm' : 'Intel Inc.'; 
-      if (parameter === 37446) return isMobile ? 'Adreno (TM) 640' : 'Intel(R) Iris(R) Xe Graphics'; 
-      return getParameter.apply(this, [parameter]);
-    };
-    const scrollPattern = async () => {
-      const steps = Math.floor(Math.random() * 6) + 6; 
-      for (let i = 0; i < steps; i++) {
-        const pause = Math.random() > 0.8 ? 5000 : 2000; 
-        window.scrollBy({ top: Math.random() * 300 + 100, behavior: 'smooth' });
-        await sleep(pause);
-        if (Math.random() > 0.85) window.scrollBy({ top: -200, behavior: 'smooth' });
+
+    // 🛡️ MOUSE & SCROLL JITTER
+    const humanMove = async () => {
+      for(let i=0; i<5; i++) {
+        window.scrollBy({ top: Math.random() * 200, behavior: 'smooth' });
+        await sleep(Math.random() * 2000 + 1000);
       }
     };
-    await scrollPattern();
+
+    await humanMove();
+
+    // Find and Click CTA
     const links = Array.from(document.querySelectorAll('a, button'));
-    const cta = links.find(l => l.innerText.match(/Enter|Watch|Join|Match|Chat/i)) || links[0];
+    const cta = links.find(l => l.innerText.match(/Enter|Watch|Join|Match|Chat|Continue/i)) || links[0];
+    
     if (cta) {
-      const eventType = isMobile ? 'touchstart' : 'mouseover';
-      cta.dispatchEvent(new MouseEvent(eventType, { bubbles: true }));
-      await sleep(Math.random() * 2000 + 1000); 
+      cta.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+      await sleep(1500);
       cta.click(); 
     }
-    const dwell = Math.floor(Math.random() * 35000) + 45000; 
+
+    // High Dwell to ensure tracker fires (60-90s)
+    const dwell = Math.floor(Math.random() * 30000) + 60000; 
     const elapsed = Date.now() - start;
     if (dwell > elapsed) await sleep(dwell - elapsed);
   })();
@@ -74,13 +74,14 @@ async function fireAgent(id) {
         url: CONFIG.OFFER_URL,
         render: 'true',
         country_code: 'us',
-        premium: 'true', 
+        premium: 'true',
+        keep_headers: 'true', // 🔥 CRITICAL: Forwards the Referer to MyLead
         device_type: Math.random() > 0.5 ? 'desktop' : 'mobile', 
         js_instructions: VANGUARD_JS,
-        session_number: Math.floor(Math.random() * 1000000)
+        session_number: Math.floor(Math.random() * 10000000)
       },
       headers: {
-        'Referer': CONFIG.REFERER // Set custom referer 🛡️
+        'Referer': CONFIG.REFERER 
       },
       timeout: 180000 
     });
@@ -91,51 +92,25 @@ async function fireAgent(id) {
     
   } catch (e) {
     const status = e.response?.status;
-    const deadKey = SCRAPER_KEYS[currentKeyIndex];
     console.log(`[T${id}] Key Index ${currentKeyIndex} Drop: Status ${status || e.message}`);
     
-    if (status === 401 || status === 403) {
-      await alertDeadKey(status, deadKey, currentKeyIndex);
+    if (status === 401 || status === 403 || status === 429) {
       currentKeyIndex = (currentKeyIndex + 1) % SCRAPER_KEYS.length;
     }
-    
-    if (status === 429) {
-        currentKeyIndex = (currentKeyIndex + 1) % SCRAPER_KEYS.length;
-    }
-    
-    await new Promise(r => setTimeout(r, 15000));
+    await new Promise(r => setTimeout(r, 10000));
   }
-}
-
-// ... (Rest of your alertDeadKey, reportToDiscord, and worker functions remain the same)
-async function alertDeadKey(status, key, index) {
-  const type = status === 401 ? "INVALID/BANNED" : "OUT OF CREDITS";
-  const payload = {
-    embeds: [{
-      title: `⚠️ KEY EJECTED: ${type}`,
-      color: 0xff0000,
-      fields: [
-        { name: "Status", value: `${status}`, inline: true },
-        { name: "Index", value: `${index}`, inline: true },
-        { name: "Key Snippet", value: `\`${key.substring(0, 8)}...\``, inline: false }
-      ],
-      timestamp: new Date()
-    }]
-  };
-  await axios.post(CONFIG.WEBHOOK, payload).catch(() => {});
 }
 
 async function reportToDiscord(id, time, total) {
   const payload = {
     embeds: [{
-      title: "🛡️ TACTICAL VANGUARD: HIT",
-      color: 0x9b59b6,
+      title: "🛡️ TACTICAL VANGUARD: HIT REGISTERED",
+      color: 0x2ecc71,
       fields: [
         { name: "Agent", value: `Thread-${id}`, inline: true },
         { name: "Dwell Time", value: `${time}s`, inline: true },
-        { name: "Progress", value: `${total} / ${CONFIG.TARGET}`, inline: true }
+        { name: "Global Progress", value: `${total} / ${CONFIG.TARGET}`, inline: true }
       ],
-      footer: { text: "Self-Healing Mode | Auto-Rotating Keys" },
       timestamp: new Date()
     }]
   };
@@ -143,15 +118,19 @@ async function reportToDiscord(id, time, total) {
 }
 
 async function worker(id) {
-  await new Promise(r => setTimeout(r, (id - 1) * 60000));
+  // Staggered launch
+  await new Promise(r => setTimeout(r, Math.random() * 60000));
+  
   while (totalHits < CONFIG.TARGET) {
     await fireAgent(id);
+    // Faster cycle for 4-hour target (wait 15-45s between hits)
     const chillTime = Math.floor(Math.random() * 30000) + 15000; 
     await new Promise(r => setTimeout(r, chillTime));
   }
 }
 
-for (let i = 1; i <= 6; i++) {
-  console.log(`🚀 Launching Agent ${i} (Tactical Mode)...`);
+// 🚀 Launching 10 Agents to crush the 1.5k target in 4 hours
+for (let i = 1; i <= 10; i++) {
+  console.log(`🚀 Launching Agent ${i}...`);
   worker(i);
 }
